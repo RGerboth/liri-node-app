@@ -19,7 +19,9 @@
   "homepage": "https://github.com/RGerboth/liri-node-app#readme",
   "dependencies": {
     "dotenv": "^5.0.0",
+    "fs": "0.0.1-security",
     "node-spotify-api": "^1.0.7",
+    "request": "^2.83.0",
     "save": "^2.3.2",
     "twitter": "^1.7.1"
   }
