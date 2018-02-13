@@ -7,15 +7,6 @@ var Twitter = require("twitter");
 var Spotify = require("node-spotify-api");
 var request = require("request");
  
-console.log(process.argv[2])
-//keys
-// console.log("Twitter Key: " + keys.twitter.consumer_key)
-// console.log("Twitter Secret: " + keys.twitter.consumer_secret)
-// console.log("Twitter token: " + keys.twitter.access_token_key)
-// console.log("Twitter token Secret: " + keys.twitter.access_token_secret)
-// console.log("Spotify ID: " + keys.spotify.spotifyID)
-// console.log("Spotify Secret: " + keys.spotify.spotifySecret)
-
 var spotify = new Spotify({
   id: keys.spotify.spotifyID,
   secret: keys.spotify.spotifySecret
@@ -28,13 +19,13 @@ var client = new Twitter({
   access_token_secret: keys.twitter.access_token_secret
 });
 
+
 //process input 
 if ((process.argv[2]) == "my-tweets") {
 	//twitter
 	var params = {screen_name: 'nodejs', count: 20};
 	client.get('statuses/user_timeline', params, function(error, tweets, response) {
 	  	if (!error) {
-	  		console.log(tweets)
 			console.log("Here are your latest 20 tweets:")
 	  		for (i=0; i<tweets.length; i++) {
 	  		console.log("----------------------------------------------------")
@@ -57,12 +48,22 @@ if ((process.argv[2]) == "my-tweets") {
 		if (err) {
 			return console.log('Error occurred: ' + err);
 	    }
-		console.log("You asked me to Spotify " + songName + ". Here are some song facts:")
-		console.log("Artist(s):     " + (data.tracks.items[0].artists[0].name))
-		console.log("Song Name:     " + (data.tracks.items[0].name))
-		console.log("Album:         " + (data.tracks.items[0].album.name))
-		console.log("Sample (API):  " + (data.tracks.items[0].album.artists[0].href))
-		console.log("Sample (HTML): " + (data.tracks.items[0].external_urls.spotify))
+	    // cracks the data file like a walnut
+	    // console.log(data.tracks.items[0])
+		console.log("You asked me to Spotify " + songName + ". Here are some fun song facts:")
+		console.log("Artist(s):      " + (data.tracks.items[0].artists[0].name))
+		console.log("Song Name:      " + (data.tracks.items[0].name))
+		console.log("Album:          " + (data.tracks.items[0].album.name))
+		if (data.tracks.items[0].preview_url) {
+			console.log("Preview URL:    " + (data.tracks.items[0].preview_url))
+		} else {
+			console.log("Preview URL:    I'm sorry, there is no preview available for " + (data.tracks.items[0].name) + ".") 
+			console.log("                Perhaps the resources below will be helpful.")
+			console.log(" ")
+			console.log("-- Additional Resources --")
+			console.log("Link to (API):  " + (data.tracks.items[0].album.artists[0].href))
+			console.log("Link to (HTML): " + (data.tracks.items[0].external_urls.spotify))
+		}
 	});
 
 } else if ((process.argv[2]) == "movie-this") {
@@ -77,7 +78,7 @@ if ((process.argv[2]) == "my-tweets") {
 
 	request('http://www.omdbapi.com/?apikey=trilogy&t=' + movieName + '&y=&plot=short', function (err, response, body) {
 		if (!err && response.statusCode === 200) {
-			console.log("You asked for " + movieName + ". Here are the movie facts:")
+			console.log("You asked for " + movieName + ". Here are the facts:")
 			console.log("Title:           " + JSON.parse(body).Title)
 			console.log("Year: 	         " + JSON.parse(body).Year)
 			console.log("IMDB Rating:     " + JSON.parse(body).imdbRating)
