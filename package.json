@@ -19,8 +19,13 @@
   "homepage": "https://github.com/RGerboth/liri-node-app#readme",
   "dependencies": {
     "dotenv": "^5.0.0",
+<<<<<<< HEAD
+    "fs": "0.0.1-security",
+=======
     "file-system": "^2.2.2",
+>>>>>>> a8e1e6fd5742dd479f1f331a49db72a81365b688
     "node-spotify-api": "^1.0.7",
+    "request": "^2.83.0",
     "save": "^2.3.2",
     "twitter": "^1.7.1"
   }

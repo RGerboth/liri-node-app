@@ -1,1 +1,5 @@
+<<<<<<< HEAD
+spotify-this-song,"Bohemian Rhapsody"
+=======
 spotify-this-song,"I Want It That Way"
+>>>>>>> a8e1e6fd5742dd479f1f331a49db72a81365b688
