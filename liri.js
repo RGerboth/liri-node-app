@@ -30,42 +30,48 @@ inquirer
   .prompt([
     {
       type: "input",
-      message: "Hello, what is your name?",
+      message: "Hello, I'm Liri. What is your name?",
       name: "userInputName"
     },
     {
       type: "list",
       message: "What can I do for you today?",
-      choices: ["Show me my Tweets", "Spotify a song for me", "Look up movie information", "Surprise me"],
+      choices: ["  Show me my Tweets", "  Spotify a song for me", "  Look up movie information", "  Surprise me"],
       name: "userAction"
-    },
-    {
-      type: "input",
-      message: "What would you like me to search for?",
-      name: "userSearch"
-    },
-    // Here we ask the user to confirm.
-    {
-      type: "confirm",
-      message: "Are you ready?:",
-      name: "confirm",
-      default: true
     }
   ]).then(function(response) {
-    if (response.confirm) {
+    // if (response.confirm) {
 		userName = response.userInputName
 		console.log("\nWelcome " + userName);
-		if (response.userAction == "Show me my Tweets") {
+		if (response.userAction == "  Show me my Tweets") {
 			operation="my-tweets"
 			search()
-		} else if (response.userAction == "Spotify a song for me") {
-			operation="spotify-this-song"
-			searchTerms=response.userSearch
-			search()
-		} else if (response.userAction == "Look up movie information") {
-			operation="movie-this"
-			searchTerms=response.userSearch
-			search()
+		} else if (response.userAction == "  Spotify a song for me") {
+			inquirer
+				.prompt([
+ 					{
+		      		type: "input",
+		      		message: "  What song you like me to search for?",
+		      		name: "userSearch"
+		    		}
+  				]).then(function(response) {
+					operation="spotify-this-song"
+					searchTerms=response.userSearch
+					search()
+				})
+		} else if (response.userAction == "  Look up movie information") {
+			inquirer
+				.prompt([
+ 					{
+		      		type: "input",
+		      		message: "  What movie you like me to search for?",
+		      		name: "userSearch"
+		    		}
+  				]).then(function(response) {
+					operation="movie-this"
+					searchTerms=response.userSearch
+					search()
+				})
 		} else {
 			operation="do-what-it-says"
 			fs.readFile(commandFile, "utf8", function(err, data) {
@@ -85,12 +91,9 @@ inquirer
 			search();
 		});
       }
-    }
-    else {
-      console.log("\nThat's okay " + userName + ", come again when you are ready.\n");
-    }
   });
 
+// ++++ BELOW IS ORIGINAL LINE-ENTRY CODE ++++
 // if (operation == "do-what-it-says") {
 // 	fs.readFile(commandFile, "utf8", function(err, data) {
 // 		if (err) {
@@ -119,11 +122,10 @@ inquirer
 
 // 	search();
 // }
+// ++++ END ORIGINAL LINE-ENTRY CODE ++++
 
-//conduct query
 function search() {
 	if (operation == "my-tweets") {
-		//twitter
 		var params = {screen_name: 'nodejs', count: 20};
 		client.get('statuses/user_timeline', params, function(error, tweets, response) {
 		  	if (!error) {
@@ -140,10 +142,10 @@ function search() {
 		if (!searchTerms) {
 			searchTerms = "The Sign Ace of Base";
 		}
-		spotify.search({ type: 'track', query: searchTerms, limit: 2}, function(err, data) {
+		spotify.search({ type: 'track', query: searchTerms, limit: 1}, function(err, data) {
 			var tracks = data.tracks.items
-			if (err) {
-				return console.log('Error occurred: ' + err);
+			if (data.tracks.total == 0) {
+				return console.log("  I'm sorry " + userName + ", I cannot find that song.");
 		    }
 		    // console.log below cracks the Spotify data file like a walnut
 		    // console.log(data.tracks.items[0])
@@ -185,7 +187,7 @@ function search() {
 				console.log("  Plot:            " + JSON.parse(body).Plot)
 				console.log("  Actors:          " + JSON.parse(body).Actors)
 			} else {
-				console.log("I'm sorry " + userName + ", there was some sort of error. This is what I know: " + (JSON.parse(body).Error));
+				console.log("  I'm sorry " + userName + ", there was some sort of error. This is what OMDB tells me: " + (JSON.parse(body).Error));
 			}
 		});
 
