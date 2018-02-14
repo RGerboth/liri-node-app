@@ -6,7 +6,7 @@ var keys = require("./keys.js");
 var Twitter = require("twitter");
 var Spotify = require("node-spotify-api");
 var request = require("request");
-// var inquirer = require("inquirer")
+var inquirer = require("inquirer")
 
 var spotify = new Spotify({
   id: keys.spotify.spotifyID,
@@ -24,35 +24,101 @@ var commandFile = "random.txt"
 var operation = process.argv[2]
 var args = ""
 var searchTerms = ""
+var userName = ""
 
-if (operation == "do-what-it-says") {
-	fs.readFile(commandFile, "utf8", function(err, data) {
-		if (err) {
-			return console.log("error reading file: " + err);
-		}
-		var inputArray = data.split(",")
-		operation = inputArray[0]
-		args = inputArray[1]
-		if (operation == "do-what-it-says") {
-			return console.log("Very funny. Very funny indeed...")
-		}
-		searchTerms = ""
-		for (i=1; i<args.length-1; i++) {
-			searchTerms += args.charAt(i)		
-		}
+inquirer
+  .prompt([
+    {
+      type: "input",
+      message: "Hello, what is your name?",
+      name: "userInputName"
+    },
+    {
+      type: "list",
+      message: "What can I do for you today?",
+      choices: ["Show me my Tweets", "Spotify a song for me", "Look up movie information", "Surprise me"],
+      name: "userAction"
+    },
+    {
+      type: "input",
+      message: "What would you like me to search for?",
+      name: "userSearch"
+    },
+    // Here we ask the user to confirm.
+    {
+      type: "confirm",
+      message: "Are you ready?:",
+      name: "confirm",
+      default: true
+    }
+  ]).then(function(response) {
+    if (response.confirm) {
+		userName = response.userInputName
+		console.log("\nWelcome " + userName);
+		if (response.userAction == "Show me my Tweets") {
+			operation="my-tweets"
+			search()
+		} else if (response.userAction == "Spotify a song for me") {
+			operation="spotify-this-song"
+			searchTerms=response.userSearch
+			search()
+		} else if (response.userAction == "Look up movie information") {
+			operation="movie-this"
+			searchTerms=response.userSearch
+			search()
+		} else {
+			operation="do-what-it-says"
+			fs.readFile(commandFile, "utf8", function(err, data) {
+			if (err) {
+				return console.log("error reading file: " + err);
+			}
+			var inputArray = data.split(",")
+			operation = inputArray[0]
+			args = inputArray[1]
+			if (operation == "do-what-it-says") {
+				return console.log("Very funny. Very funny indeed...")
+			}
+			searchTerms = ""
+			for (i=1; i<args.length-1; i++) {
+				searchTerms += args.charAt(i)		
+			}
+			search();
+		});
+      }
+    }
+    else {
+      console.log("\nThat's okay " + userName + ", come again when you are ready.\n");
+    }
+  });
 
-		search();
+// if (operation == "do-what-it-says") {
+// 	fs.readFile(commandFile, "utf8", function(err, data) {
+// 		if (err) {
+// 			return console.log("error reading file: " + err);
+// 		}
+// 		var inputArray = data.split(",")
+// 		operation = inputArray[0]
+// 		args = inputArray[1]
+// 		if (operation == "do-what-it-says") {
+// 			return console.log("Very funny. Very funny indeed...")
+// 		}
+// 		searchTerms = ""
+// 		for (i=1; i<args.length-1; i++) {
+// 			searchTerms += args.charAt(i)		
+// 		}
 
-	});
-} else {
-	searchTerms = ""
-	searchTerms = process.argv[3]
-	for (i=4; i<process.argv.length; i++) {
-		searchTerms = searchTerms + " " + process.argv[i]
-	}
+// 		search();
 
-	search();
-}
+// 	});
+// } else {
+// 	searchTerms = ""
+// 	searchTerms = process.argv[3]
+// 	for (i=4; i<process.argv.length; i++) {
+// 		searchTerms = searchTerms + " " + process.argv[i]
+// 	}
+
+// 	search();
+// }
 
 //conduct query
 function search() {
@@ -88,8 +154,8 @@ function search() {
 			if (data.tracks.items[0].preview_url) {
 				console.log("  Preview URL:    " + (tracks[0].preview_url))
 			} else {
-				console.log("  Preview URL:    I'm sorry, there is no preview available for " + (tracks[0].name) + ".") 
-				console.log("                  Perhaps the resources below will be helpful.")
+				console.log("  Preview URL:    I'm sorry " + userName + ", there is no preview available for " + (tracks[0].name) + ",") 
+				console.log("                  but perhaps the resources below will be helpful.")
 				console.log(" ")
 				console.log("-- Additional Resources --")
 				console.log("  Link to (API):  " + (tracks[0].album.artists[0].href))
@@ -112,14 +178,14 @@ function search() {
 				if (JSON.parse(body).Ratings.length > 1) {
 					console.log("  Rotten Tomatoes: " + JSON.parse(body).Ratings[1].Value)
 				} else {
-					console.log("  Rotten Tomatoes: I'm sorry, there is no Rotten Tomatoes rating for this film.")
+					console.log("  Rotten Tomatoes: There is no Rotten Tomatoes rating for this film.")
 				}
 				console.log("  Country:         " + JSON.parse(body).Country)
 				console.log("  Language:        " + JSON.parse(body).Language)
 				console.log("  Plot:            " + JSON.parse(body).Plot)
 				console.log("  Actors:          " + JSON.parse(body).Actors)
 			} else {
-				console.log("I'm sorry, there was some sort of error. This is what I know: " + (JSON.parse(body).Error));
+				console.log("I'm sorry " + userName + ", there was some sort of error. This is what I know: " + (JSON.parse(body).Error));
 			}
 		});
 
