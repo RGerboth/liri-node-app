@@ -25,6 +25,7 @@ var operation = process.argv[2]
 var args = ""
 var searchTerms = ""
 var userName = ""
+var twitterHandle = "RPGerboth"
 
 inquirer
   .prompt([
@@ -40,18 +41,31 @@ inquirer
       name: "userAction"
     }
   ]).then(function(response) {
-    // if (response.confirm) {
 		userName = response.userInputName
 		console.log("\nWelcome " + userName);
 		if (response.userAction == "  Show me my Tweets") {
-			operation="my-tweets"
-			search()
+			inquirer
+				.prompt([
+ 					{
+		      		type: "input",
+		      		message: "  What is your Twitter ID?",
+		      		name: "twitter"
+		    		}
+  				]).then(function(response) {
+					operation="my-tweets"
+					if (response.twitter) {
+						twitterHandle=response.twitter
+					} else {
+						twitterHandle="RPGerboth"
+					}
+					search()
+				})
 		} else if (response.userAction == "  Spotify a song for me") {
 			inquirer
 				.prompt([
  					{
 		      		type: "input",
-		      		message: "  What song you like me to search for?",
+		      		message: "  What song would you like me to search for?",
 		      		name: "userSearch"
 		    		}
   				]).then(function(response) {
@@ -75,22 +89,22 @@ inquirer
 		} else {
 			operation="do-what-it-says"
 			fs.readFile(commandFile, "utf8", function(err, data) {
-			if (err) {
-				return console.log("error reading file: " + err);
-			}
-			var inputArray = data.split(",")
-			operation = inputArray[0]
-			args = inputArray[1]
-			if (operation == "do-what-it-says") {
-				return console.log("Very funny. Very funny indeed...")
-			}
-			searchTerms = ""
-			for (i=1; i<args.length-1; i++) {
-				searchTerms += args.charAt(i)		
-			}
-			search();
-		});
-      }
+				if (err) {
+					return console.log("error reading file: " + err);
+				}
+				var inputArray = data.split(",")
+				operation = inputArray[0]
+				args = inputArray[1]
+				if (operation == "do-what-it-says") {
+					return console.log("Very funny. Very funny indeed...")
+				}
+				searchTerms = ""
+				for (i=1; i<args.length-1; i++) {
+					searchTerms += args.charAt(i)		
+				}
+				search();
+			});
+    	}
   });
 
 // ++++ BELOW IS ORIGINAL LINE-ENTRY CODE ++++
@@ -126,10 +140,10 @@ inquirer
 
 function search() {
 	if (operation == "my-tweets") {
-		var params = {screen_name: 'nodejs', count: 20};
+		var params = {screen_name: twitterHandle, count: 20};
 		client.get('statuses/user_timeline', params, function(error, tweets, response) {
 		  	if (!error) {
-				console.log("Here are your latest 20 tweets:")
+				console.log("Here are " + twitterHandle + "'s latest " + tweets.length + " tweets:")
 		  		for (i=0; i<tweets.length; i++) {
 		  		console.log("----------------------------------------------------------------------------------------------------")
 				console.log("Created at: " + tweets[i].created_at)
@@ -144,7 +158,7 @@ function search() {
 		}
 		spotify.search({ type: 'track', query: searchTerms, limit: 1}, function(err, data) {
 			var tracks = data.tracks.items
-			if (data.tracks.total == 0) {
+			if (err || data.tracks.total == 0) {
 				return console.log("  I'm sorry " + userName + ", I cannot find that song.");
 		    }
 		    // console.log below cracks the Spotify data file like a walnut
@@ -171,8 +185,6 @@ function search() {
 		}
 		request('http://www.omdbapi.com/?apikey=trilogy&t=' + searchTerms + '&y=&plot=short', function (err, response, body) {
 			if (!err && response.statusCode === 200 && !JSON.parse(body).Error) {
-				// console.log below displays full body in JSON format
-				// console.log(JSON.parse(body))
 				console.log("You asked for " + searchTerms + ". Here are the facts:")
 				console.log("  Title:           " + JSON.parse(body).Title)
 				console.log("  Year: 	   " + JSON.parse(body).Year)
